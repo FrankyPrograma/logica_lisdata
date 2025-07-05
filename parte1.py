@@ -1,49 +1,36 @@
-from collections import defaultdict
-
-def calculate_points(cards):
-    resultado = 0
-    cardsCoinciden = defaultdict(set)
+def calculate_points(card_list):
+    total_points = 0
     
-    for i, card in enumerate(cards):
-        for n in card["yours"]:
-            if n in card["winning"]:
-                cardsCoinciden[i].add(n)
-                        
-                    
-    for coinciden in cardsCoinciden.values():
-        n = len(coinciden)
-        
-        if n == 1: 
-            resultado += n
-        elif n > 1: 
-            resultado += 2 ** (n - 1)
-            
-    return resultado
+    for card in card_list:
+        match_count = len(set(card['winning']) & set(card['yours']))
+        if match_count > 0:
+            total_points += 2 ** (match_count - 1)
+    
+    return total_points
 
 
-def load_cards(path):
-    cards = []
+def load_cards(file_path):
+    card_list = []
     try:
-        with open(path, "r") as file:
-            for line in file:
-                left, right = line.strip().split("|")
-
-                winning_numbers = list(map(int, left.split(":")[1].strip().split()))
-                your_numbers = list(map(int, right.strip().split()))
-                
-                cards.append({
-                    "winning": winning_numbers,
-                    "yours": your_numbers
+        with open(file_path, "r") as input_file:
+            for line in input_file:
+                winning_part, your_part = line.strip().split("|")
+                winning_nums = list(map(int, winning_part.split(":")[1].strip().split()))
+                your_nums   = list(map(int, your_part.strip().split()))
+                card_list.append({
+                    "winning": winning_nums,
+                    "yours":   your_nums
                 })
-    
-        return cards
-    except Exception as e:
-        print(f"No se pudo acceder al archivo: {e}")
-        
-cards = load_cards('cards_input.txt')
+        return card_list
+    except Exception as error:
+        print(f"No se pudo acceder al archivo: {error}")
+        return []
 
-if cards: 
-    result = calculate_points(cards=cards)
-    print(result)
-else:
-    print("No se puedieron calcular los puntos porque no se cargaron las tarjetas")
+
+if __name__ == "__main__":
+    card_list = load_cards('cards_input.txt')
+    if card_list:
+        total_points = calculate_points(card_list)
+        print(total_points)
+    else:
+        print("No se pudieron calcular los puntos porque no se cargaron las tarjetas")
